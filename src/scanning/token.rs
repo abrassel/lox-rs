@@ -2,7 +2,7 @@ use std::num::ParseFloatError;
 
 use thiserror::Error;
 
-use crate::scanning::Scanner;
+use crate::scanning::{Scanner, TokenResult};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
@@ -61,7 +61,7 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn consume(source: &mut Scanner) -> Option<Result<Self, TokenError>> {
+    pub fn consume(source: &mut Scanner) -> Option<TokenResult> {
         use TokenType::*;
         let c = source.advance_skipping_whitespace()?;
         let line_number = source.line_number;
