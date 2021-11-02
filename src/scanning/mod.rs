@@ -60,7 +60,32 @@ impl Scanner<'_> {
             buf.push(char);
         }
 
-        Err(TokenErrorKind::MissingCharacter(c))
+        Err(TokenErrorKind::MissingString(c.into()))
+    }
+
+    pub(crate) fn advance_until_two(
+        &mut self,
+        c1: char,
+        c2: char,
+    ) -> Result<String, TokenErrorKind> {
+        let mut buf = String::new();
+        let mut c1_set = false;
+        while let Some(char) = self.advance() {
+            if c1_set {
+                if char == c2 {
+                    return Ok(buf);
+                }
+
+                c1_set = false;
+                buf.push(c1);
+            } else if char == c1 {
+                c1_set = true;
+            } else {
+                buf.push(char);
+            }
+        }
+
+        Err(TokenErrorKind::MissingString(format!("{}{}", c1, c2)))
     }
 
     pub(crate) fn finish_number(&mut self, buf: &mut String) {
@@ -207,6 +232,18 @@ mod tests {
         ]);
 
         assert_eq!(parsed, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiline_comment() -> Result<(), TokenError> {
+        let line = "/* this is
+         a test ****** / *  //
+
+         tt */";
+        let parsed = scan_tokens(line).collect::<Result<Vec<_>, _>>()?;
+        assert_eq!(parsed, vec![]);
 
         Ok(())
     }

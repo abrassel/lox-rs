@@ -110,6 +110,9 @@ impl Token {
                         // discard comments
                         let _ = source.advance_until('\n');
                         return Self::consume(source);
+                    } else if source.advance_match('*') {
+                        let _ = source.advance_until_two('*', '/');
+                        return Self::consume(source);
                     } else {
                         Slash
                     }
@@ -168,7 +171,7 @@ pub enum TokenErrorKind {
     #[error("Unexpected character: {0}")]
     UnexpectedCharacter(char),
     #[error("EOF before expected character: {0}")]
-    MissingCharacter(char),
+    MissingString(String),
     #[error(transparent)]
     Other(#[from] ParseFloatError),
 }
